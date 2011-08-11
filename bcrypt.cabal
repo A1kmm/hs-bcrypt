@@ -3,6 +3,7 @@ Version: 0.0.1
 Cabal-Version: >= 1.6
 Build-Type: Simple
 License: BSD3
+License-File: LICENSE
 Copyright: Copyright (C) 2011 Andrew Miller
 Author: Andrew Miller
 Maintainer: andrew@amxl.com
