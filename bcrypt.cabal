@@ -1,5 +1,5 @@
 Name: bcrypt
-Version: 0.0.2
+Version: 0.0.3
 Cabal-Version: >= 1.6
 Build-Type: Simple
 License: BSD3
@@ -15,6 +15,7 @@ description: Haskell bindings to the bcrypt password hash.
 
              The OpenWall version of the C source for bcrypt (modified so it will build on all platforms without any assembler code) is included in this package.
 synopsis: Haskell bindings to the bcrypt password hash
+extra-source-files: csrc/crypt_blowfish.h csrc/crypt_gensalt.h csrc/crypt.h csrc/ow-crypt.h
 
 Library
   exposed-modules: Crypto.BCrypt
