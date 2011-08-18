@@ -1,5 +1,5 @@
 Name: bcrypt
-Version: 0.0.1
+Version: 0.0.2
 Cabal-Version: >= 1.6
 Build-Type: Simple
 License: BSD3
@@ -18,6 +18,7 @@ synopsis: Haskell bindings to the bcrypt password hash
 
 Library
   exposed-modules: Crypto.BCrypt
+  include-dirs: csrc
   c-sources: csrc/crypt_blowfish.c csrc/crypt_blowfish_wrapper.c csrc/crypt_gensalt.c
   build-depends: bytestring == 0.9.*,
                  entropy < 0.3,
