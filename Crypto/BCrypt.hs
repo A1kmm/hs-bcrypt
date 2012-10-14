@@ -18,12 +18,13 @@ module Crypto.BCrypt (HashingPolicy(..), hashPasswordUsingPolicy, validatePasswo
                       fastBcryptHashingPolicy, slowerBcryptHashingPolicy,
                       hashUsesPolicy, hashPassword, genSalt, genSaltUsingPolicy)
 where
-  
+
 import Foreign
 import Foreign.C.String
 import Foreign.C.Types
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Unsafe as BS
+import qualified System.IO.Unsafe as U
 import Control.Monad
 import System.Entropy
 
@@ -43,18 +44,18 @@ data HashingPolicy = HashingPolicy {
     --
     --       * Cost 5: 85 passwords / second
     --
-    --       * Cost 6: 44 passwords / second  
+    --       * Cost 6: 44 passwords / second
     --
     --       * Cost 7: 23 passwords / second
     --
     --       * Cost 8: 11 passwords / second
     --
     --       * Cost 9: 5.7 passwords / second
-    -- 
+    --
     --       * Cost 10: 2.8 passwords / second
-    -- 
+    --
     --       * Cost 11: 1.4 passwords / second
-    -- 
+    --
     --       * Cost 12: 0.72 passwords / second
     preferredHashCost :: Int,
     -- | Preferred algorithm - the preferred hash algorithm. $2y$ for bcrypt.
@@ -95,7 +96,7 @@ slowerBcryptHashingPolicy = fastBcryptHashingPolicy { preferredHashCost = 14 }
 
 -- | Check whether a password hash is consistent with the current policy, or if
 --   it should be updated.
-hashUsesPolicy :: HashingPolicy -> BS.ByteString -> Bool 
+hashUsesPolicy :: HashingPolicy -> BS.ByteString -> Bool
 hashUsesPolicy (HashingPolicy phc pha) str =
   let phaLen = BS.length pha
       strPref = BS.take phaLen str
@@ -104,7 +105,7 @@ hashUsesPolicy (HashingPolicy phc pha) str =
   in
    (strPref == pha) && (hcBase == BS.unpack strInfo)
 
--- | Hashes a password (first argument) using the settings specified in second 
+-- | Hashes a password (first argument) using the settings specified in second
 --   argument. The settings describe the hashing variant and salt to use; because
 --   the settings are prepended to password hashes, passing in an existing password
 --   hash will cause the same settings to be used again.
@@ -112,7 +113,7 @@ hashUsesPolicy (HashingPolicy phc pha) str =
 --   Result: Just hash on success, Nothing on failure (invalid settings).
 hashPassword :: BS.ByteString -> BS.ByteString -> Maybe BS.ByteString
 hashPassword pw setting =
-  unsafePerformIO $ BS.useAsCString pw $
+  U.unsafePerformIO $ BS.useAsCString pw $
     \pw' -> BS.useAsCString setting $
       \setting' -> alloca $ \data' -> alloca $ \dlen -> do
         poke dlen 0
@@ -138,7 +139,7 @@ hashPassword pw setting =
 --   string of random entropy.
 genSalt :: BS.ByteString -> Int -> BS.ByteString -> Maybe BS.ByteString
 genSalt settings cost entropy =
-  unsafePerformIO $ BS.useAsCString settings $ \settings' -> 
+  U.unsafePerformIO $ BS.useAsCString settings $ \settings' ->
     BS.unsafeUseAsCString entropy $ \entropy' -> do
       res <- c_crypt_gensalt_ra settings' (fromIntegral cost) entropy' (fromIntegral $ BS.length entropy)
       if res == nullPtr
@@ -149,10 +150,10 @@ genSalt settings cost entropy =
             ret <- BS.packCString res
             free res
             return $ Just ret
-            
+
 -- | Generates a salt using a policy, sampling from a system-appropriate source.
 genSaltUsingPolicy :: HashingPolicy -> IO (Maybe BS.ByteString)
 genSaltUsingPolicy (HashingPolicy hc ha) = do
   ent <- getEntropy 16
   return $ genSalt ha hc ent
-  
+
