@@ -58,7 +58,9 @@ data HashingPolicy = HashingPolicy {
     --
     --       * Cost 12: 0.72 passwords / second
     preferredHashCost :: Int,
-    -- | Preferred algorithm - the preferred hash algorithm. $2y$ for bcrypt.
+    -- | Preferred algorithm - the preferred hash algorithm.
+    --   The default is $2y$ (compatible with other Openwall-based
+    --   libraries). The most up-to-date version is $2b$.
     preferredHashAlgorithm :: BS.ByteString
   }
 
