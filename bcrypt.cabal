@@ -1,5 +1,5 @@
 Name: bcrypt
-Version: 0.0.5
+Version: 0.0.6
 Cabal-Version: >= 1.6
 Build-Type: Simple
 License: BSD3
