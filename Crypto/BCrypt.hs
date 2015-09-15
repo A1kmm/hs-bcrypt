@@ -26,6 +26,7 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Unsafe as BS
 import qualified System.IO.Unsafe as U
 import Control.Monad
+import Data.ByteArray (constEq)
 import System.Entropy
 
 foreign import ccall "crypt_ra" c_crypt_ra :: CString -> CString -> Ptr CString -> Ptr CInt -> IO CString
@@ -82,7 +83,7 @@ validatePassword h pw =
   case hashPassword pw h
     of
       Nothing -> False
-      Just h2 -> h2 == h
+      Just h2 -> h2 `constEq` h
 
 -- | A policy that allows passwords to be hashed reasonably quickly, but for that
 --   reason isn't suitable for high security applications.
@@ -158,4 +159,3 @@ genSaltUsingPolicy :: HashingPolicy -> IO (Maybe BS.ByteString)
 genSaltUsingPolicy (HashingPolicy hc ha) = do
   ent <- getEntropy 16
   return $ genSalt ha hc ent
-

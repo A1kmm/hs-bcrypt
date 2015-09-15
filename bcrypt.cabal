@@ -1,5 +1,5 @@
 Name: bcrypt
-Version: 0.0.6
+Version: 0.0.7
 Cabal-Version: >= 1.6
 Build-Type: Simple
 License: BSD3
@@ -23,7 +23,8 @@ Library
   c-sources: csrc/crypt_blowfish.c csrc/crypt_blowfish_wrapper.c csrc/crypt_gensalt.c
   build-depends: bytestring >= 0.9,
                  entropy < 0.4,
-                 base >= 3 && < 5
+                 base >= 3 && < 5,
+                 memory >= 0.1 && < 1.0
 
 source-repository head
   type: git
