@@ -14,7 +14,7 @@
      >>> hashUsesPolicy fastBcryptHashingPolicy (p "$2y$14$xBBZdWgTa8fSU1aPFP5IxeVdUKfT7hUDjmusZEAiNBiYaYEGY/Sh6")
      False
  -}
-module Crypto.BCrypt (HashingPolicy(..), hashPasswordUsingPolicy, validatePassword,
+module Crypto.BCrypt (HashingPolicy(..), BCryptHash(..), hashPasswordUsingPolicy, validatePassword,
                       fastBcryptHashingPolicy, slowerBcryptHashingPolicy,
                       hashUsesPolicy, hashPassword, genSalt, genSaltUsingPolicy)
 where
@@ -65,8 +65,11 @@ data HashingPolicy = HashingPolicy {
     preferredHashAlgorithm :: BS.ByteString
   }
 
+newtype BCryptHash = BCryptHash { fromBCryptHash :: BS.ByteString }
+  deriving (Eq, Show)
+
 -- | Hashes a password, using a hashing policy.
-hashPasswordUsingPolicy :: HashingPolicy -> BS.ByteString -> IO (Maybe BS.ByteString)
+hashPasswordUsingPolicy :: HashingPolicy -> BS.ByteString -> IO (Maybe BCryptHash)
 hashPasswordUsingPolicy hp pw = do
   ms <- genSaltUsingPolicy hp
   return $ do
@@ -78,12 +81,12 @@ hashPasswordUsingPolicy hp pw = do
 --   Note: If a password validates successfully, it is a good idea to check if the
 --   password is up to the current policy using hashUsesPolicy, and re-hashing it
 --   if not.
-validatePassword :: BS.ByteString -> BS.ByteString -> Bool
-validatePassword h pw =
+validatePassword :: BCryptHash -> BS.ByteString -> Bool
+validatePassword (BCryptHash h) pw =
   case hashPassword pw h
     of
       Nothing -> False
-      Just h2 -> h2 `constEq` h
+      Just (BCryptHash h2) -> h2 `constEq` h
 
 -- | A policy that allows passwords to be hashed reasonably quickly, but for that
 --   reason isn't suitable for high security applications.
@@ -99,8 +102,8 @@ slowerBcryptHashingPolicy = fastBcryptHashingPolicy { preferredHashCost = 14 }
 
 -- | Check whether a password hash is consistent with the current policy, or if
 --   it should be updated.
-hashUsesPolicy :: HashingPolicy -> BS.ByteString -> Bool
-hashUsesPolicy (HashingPolicy phc pha) str =
+hashUsesPolicy :: HashingPolicy -> BCryptHash -> Bool
+hashUsesPolicy (HashingPolicy phc pha) (BCryptHash str) =
   let phaLen = BS.length pha
       strPref = BS.take phaLen str
       strInfo = BS.take 2 (BS.drop phaLen str)
@@ -114,8 +117,8 @@ hashUsesPolicy (HashingPolicy phc pha) str =
 --   hash will cause the same settings to be used again.
 --   You can create a hash using genSalt.
 --   Result: Just hash on success, Nothing on failure (invalid settings).
-hashPassword :: BS.ByteString -> BS.ByteString -> Maybe BS.ByteString
-hashPassword pw setting =
+hashPassword :: BS.ByteString -> BS.ByteString -> Maybe BCryptHash
+hashPassword pw setting = fmap BCryptHash $
   U.unsafePerformIO $ BS.useAsCString pw $
     \pw' -> BS.useAsCString setting $
       \setting' -> alloca $ \data' -> alloca $ \dlen -> do
