@@ -24,10 +24,11 @@ Library
   exposed-modules: Crypto.BCrypt
   include-dirs: csrc
   c-sources: csrc/crypt_blowfish.c csrc/crypt_blowfish_wrapper.c csrc/crypt_gensalt.c
-  build-depends: bytestring >= 0.9,
-                 entropy < 0.4,
-                 base >= 3 && < 5,
-                 memory >= 0.9 && < 1.0
+  build-depends: base >= 3 && < 5
+               , bytestring >= 0.9
+               , data-default >= 0.6.0
+               , entropy < 0.4
+               , memory >= 0.9 && < 1.0
 
 source-repository head
   type: git

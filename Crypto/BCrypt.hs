@@ -1,4 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 {- | A module for hashing passwords with bcrypt.
 
      >>> import Crypto.BCrypt
@@ -16,7 +18,8 @@
  -}
 module Crypto.BCrypt (HashingPolicy(..), hashPasswordUsingPolicy, validatePassword,
                       fastBcryptHashingPolicy, slowerBcryptHashingPolicy,
-                      hashUsesPolicy, hashPassword, genSalt, genSaltUsingPolicy)
+                      hashUsesPolicy, hashPassword, genSalt, genSaltUsingPolicy
+                      defaultHashAlgorithm)
 where
 
 import Foreign
@@ -27,6 +30,7 @@ import qualified Data.ByteString.Unsafe as BS
 import qualified System.IO.Unsafe as U
 import Control.Monad
 import Data.ByteArray (constEq)
+import Data.Default
 import System.Entropy
 
 foreign import ccall "crypt_ra" c_crypt_ra :: CString -> CString -> Ptr CString -> Ptr CInt -> IO CString
@@ -63,7 +67,15 @@ data HashingPolicy = HashingPolicy {
     --   The default is $2y$ (compatible with other Openwall-based
     --   libraries). The most up-to-date version is $2b$.
     preferredHashAlgorithm :: BS.ByteString
-  }
+  } deriving (Show, Eq)
+
+instance Default HashingPolicy where
+  -- Slower hashing seems like a decent default.
+  def = slowerBcryptHashingPolicy
+
+-- | Default is compatible with other Openwall-based libraries.
+defaultHashAlgorithm :: BS.ByteString
+defaultHashAlgorithm = "$2y$"
 
 -- | Hashes a password, using a hashing policy.
 hashPasswordUsingPolicy :: HashingPolicy -> BS.ByteString -> IO (Maybe BS.ByteString)
@@ -88,7 +100,7 @@ validatePassword h pw =
 -- | A policy that allows passwords to be hashed reasonably quickly, but for that
 --   reason isn't suitable for high security applications.
 fastBcryptHashingPolicy :: HashingPolicy
-fastBcryptHashingPolicy = HashingPolicy 4 (BS.pack "$2y$")
+fastBcryptHashingPolicy = HashingPolicy 4 defaultHashAlgorithm
 
 -- | A policy which makes password hashing substantially slower than
 --   fastBcryptHashingPolicy, and so makes it more difficult for an adversary to
