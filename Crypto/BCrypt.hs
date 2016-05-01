@@ -18,7 +18,7 @@
  -}
 module Crypto.BCrypt (HashingPolicy(..), hashPasswordUsingPolicy, validatePassword,
                       fastBcryptHashingPolicy, slowerBcryptHashingPolicy,
-                      hashUsesPolicy, hashPassword, genSalt, genSaltUsingPolicy
+                      hashUsesPolicy, hashPassword, genSalt, genSaltUsingPolicy,
                       defaultHashAlgorithm)
 where
 
