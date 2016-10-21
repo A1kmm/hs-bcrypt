@@ -37,6 +37,10 @@
 #define CRYPT_OUTPUT_SIZE		(7 + 22 + 31 + 1)
 #define CRYPT_GENSALT_OUTPUT_SIZE	(7 + 22 + 1)
 
+#if defined(_WIN64) && _WIN64
+#define strdup _strdup
+#endif
+
 #if defined(__GLIBC__) && defined(_LIBC)
 #define __SKIP_GNU
 #endif
